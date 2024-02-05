@@ -24,6 +24,9 @@
         :placeholder="t('sys.login.password')"
       />
     </FormItem>
+    <FormItem name="loginSource" hidden>
+      <Input v-model:value="formData.loginSource" />
+    </FormItem>
 
     <ARow class="enter-x">
       <ACol :span="12">
@@ -83,7 +86,6 @@
 </template>
 <script lang="ts" setup>
   import { reactive, ref, unref, computed } from 'vue';
-
   import { Checkbox, Form, Input, Row, Col, Button, Divider } from 'ant-design-vue';
   import {
     GithubFilled,
@@ -93,21 +95,21 @@
     TwitterCircleFilled,
   } from '@ant-design/icons-vue';
   import LoginFormTitle from './LoginFormTitle.vue';
-
   import { useI18n } from '@/hooks/web/useI18n';
   import { useMessage } from '@/hooks/web/useMessage';
 
   import { useUserStore } from '@/store/modules/user';
   import { LoginStateEnum, useLoginState, useFormRules, useFormValid } from './useLogin';
   import { useDesign } from '@/hooks/web/useDesign';
-  //import { onKeyStroke } from '@vueuse/core';
+
+  defineOptions({ name: 'LoginForm' });
 
   const ACol = Col;
   const ARow = Row;
   const FormItem = Form.Item;
   const InputPassword = Input.Password;
   const { t } = useI18n();
-  const { notification, createErrorModal } = useMessage();
+  const { createErrorModal } = useMessage();
   const { prefixCls } = useDesign('login');
   const userStore = useUserStore();
 
@@ -119,8 +121,9 @@
   const rememberMe = ref(false);
 
   const formData = reactive({
-    account: 'vben',
-    password: '123456',
+    account: 'admin',
+    password: '21232F297A57A5A743894A0E4A801FC3',
+    loginSource: 1,
   });
 
   const { validForm } = useFormValid(formRef);
@@ -134,18 +137,12 @@
     if (!data) return;
     try {
       loading.value = true;
-      const userInfo = await userStore.login({
+      await userStore.login({
+        loginName: data.account,
         password: data.password,
-        username: data.account,
+        loginSource: data.loginSource,
         mode: 'none', //不要默认的错误提示
       });
-      if (userInfo) {
-        notification.success({
-          message: t('sys.login.loginSuccessTitle'),
-          description: `${t('sys.login.loginSuccessDesc')}: ${userInfo.realName}`,
-          duration: 3,
-        });
-      }
     } catch (error) {
       createErrorModal({
         title: t('sys.api.errorTip'),

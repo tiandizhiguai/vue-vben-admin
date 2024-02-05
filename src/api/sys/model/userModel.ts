@@ -4,6 +4,7 @@
 export interface LoginParams {
   username: string;
   password: string;
+  loginSource: string;
 }
 
 export interface RoleInfo {
@@ -35,4 +36,15 @@ export interface GetUserInfoModel {
   avatar: string;
   // 介绍
   desc?: string;
+}
+
+export interface LoginUserModel {
+  id: number;
+  loginName: string;
+  userName: string;
+  email: string;
+  roleType: number;
+  registeredSource: number;
+  lastLoginTime: string;
+  lastLoginToken: string;
 }

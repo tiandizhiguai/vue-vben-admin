@@ -1,0 +1,14 @@
+{
+	"sysConfig": {
+		"management": "系统配置",
+		"ldap": "LDAP登录",
+		"wechat": "企业微信",
+		"dingding": "钉钉登录",
+		"feishu": "飞书登录",
+		"customizedMenu": "自定义菜单"
+	},
+	"sysUser": {
+		"management": "用户管理",
+		"list": "用户列表"
+	}
+}

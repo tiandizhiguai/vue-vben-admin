@@ -16,6 +16,7 @@ import { RouteRecordRaw } from 'vue-router';
 import { PAGE_NOT_FOUND_ROUTE } from '@/router/routes/basic';
 import { isArray } from '@/utils/is';
 import { h } from 'vue';
+import VueCookies from 'vue-cookies';
 
 interface UserState {
   userInfo: Nullable<UserInfo>;
@@ -91,20 +92,17 @@ export const useUserStore = defineStore({
       try {
         const { goHome = true, mode, ...loginParams } = params;
         const data = await loginApi(loginParams, mode);
-        const { token } = data;
-
+        const { lastLoginToken } = data;
         // save token
-        this.setToken(token);
+        this.setToken(lastLoginToken);
+        VueCookies.set('login_token', lastLoginToken, 60 * 60 * 32);
         return this.afterLoginAction(goHome);
       } catch (error) {
         return Promise.reject(error);
       }
     },
     async afterLoginAction(goHome?: boolean): Promise<GetUserInfoModel | null> {
-      if (!this.getToken) return null;
-      // get user info
       const userInfo = await this.getUserInfoAction();
-
       const sessionTimeout = this.sessionTimeout;
       if (sessionTimeout) {
         this.setSessionTimeout(false);
@@ -123,8 +121,21 @@ export const useUserStore = defineStore({
       return userInfo;
     },
     async getUserInfoAction(): Promise<UserInfo | null> {
-      if (!this.getToken) return null;
-      const userInfo = await getUserInfo();
+      const loginUser = await getUserInfo();
+      const userInfo: UserInfo = {
+        roles: [
+          {
+            roleName: 'Super Admin',
+            value: 'super',
+          },
+        ],
+        userId: loginUser.id,
+        username: loginUser.loginName,
+        realName: loginUser.userName,
+        avatar: '',
+        desc: loginUser.userName,
+      };
+
       const { roles = [] } = userInfo;
       if (isArray(roles)) {
         const roleList = roles.map((item) => item.value) as RoleEnum[];
@@ -140,13 +151,12 @@ export const useUserStore = defineStore({
      * @description: logout
      */
     async logout(goLogin = false) {
-      if (this.getToken) {
-        try {
-          await doLogout();
-        } catch {
-          console.log('注销Token失败');
-        }
+      try {
+        await doLogout();
+      } catch {
+        console.log('注销Token失败');
       }
+      VueCookies.remove('login_token');
       this.setToken(undefined);
       this.setSessionTimeout(false);
       this.setUserInfo(null);

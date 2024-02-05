@@ -164,7 +164,7 @@
 
     &-dropdown-overlay {
       .ant-dropdown-menu-item {
-        min-width: 160px;
+        min-width: 80px;
       }
     }
   }
